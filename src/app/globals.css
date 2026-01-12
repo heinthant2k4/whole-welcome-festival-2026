@@ -107,6 +107,16 @@ h3 {
 body {
   font-family: var(--font-body);
 }
+
+html {
+  scroll-behavior: smooth;
+}
+
+section {
+  scroll-margin-top: 96px;
+  /* matches reveal navbar + spacing */
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

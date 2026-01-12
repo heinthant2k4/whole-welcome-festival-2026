@@ -61,7 +61,7 @@ const Footer: React.FC<FooterProps> = ({ config }) => {
     <footer className="w-full px-4 py-12 border-t border-gray-800/50">
       <div className="max-w-6xl mx-auto">
         {/* Main Footer Content */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12 ml-4">
           {/* Brand Section */}
           <div className="space-y-4">
             <h3 className="text-2xl font-bold bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent">
@@ -77,20 +77,20 @@ const Footer: React.FC<FooterProps> = ({ config }) => {
             <h4 className="text-white font-semibold text-lg">Quick Links</h4>
             <ul className="space-y-2">
               {quickLinks.map((link, index) => (
-                <li key={index}>
-                  <a
-                    href={link.href}
-                    target={link.href.startsWith("http") ? "_blank" : undefined}
-                    rel={
-                      link.href.startsWith("http")
-                        ? "noopener noreferrer"
-                        : undefined
-                    }
-                    className="text-gray-400 hover:text-purple-400 transition-colors duration-200 text-sm"
-                  >
-                    {link.name}
-                  </a>
-                </li>
+          <li key={index}>
+            <a
+              href={link.href}
+              target={link.href.startsWith("http") ? "_blank" : undefined}
+              rel={
+                link.href.startsWith("http")
+            ? "noopener noreferrer"
+            : undefined
+              }
+              className="text-gray-400 hover:text-purple-400 transition-colors duration-200 text-sm"
+            >
+              {link.name}
+            </a>
+          </li>
               ))}
             </ul>
           </div>
@@ -99,52 +99,56 @@ const Footer: React.FC<FooterProps> = ({ config }) => {
           <div className="space-y-4">
             <h4 className="text-white font-semibold text-lg">Contact Us</h4>
             <div className="space-y-3">
-              <div className="flex items-start gap-3 text-gray-400 text-sm">
-                <Mail className="w-5 h-5 mt-0.5 flex-shrink-0" />
-                <span>contact@welcomefestival.com</span>
-              </div>
-              <div className="flex items-start gap-3 text-gray-400 text-sm">
-                <Phone className="w-5 h-5 mt-0.5 flex-shrink-0" />
-                <span>+95 xxx xxx xxxx</span>
-              </div>
-              <div className="flex items-start gap-3 text-gray-400 text-sm">
-                <MapPin className="w-5 h-5 mt-0.5 flex-shrink-0" />
-                <span>{config.venueFull}</span>
-              </div>
+          <div className="flex items-start gap-3 text-gray-400 text-sm">
+          <a
+            href="mailto:thewholewelcomefestival@gmail.com"
+            className="flex items-start gap-3 text-gray-400 hover:text-purple-400 transition-colors"
+          >
+            <Mail className="w-5 h-5 mt-0.5 flex-shrink-0" />
+            <span>thewholewelcomefestival</span>
+          </a>
+          </div>
+          <div className="flex items-start gap-3 text-gray-400 text-sm">
+          <a
+            href="tel:+959681321845"
+            className="flex items-start gap-3 text-gray-400 hover:text-purple-400 transition-colors"
+          >
+            <Phone className="w-5 h-5 mt-0.5 flex-shrink-0" />
+            <span>+959681 321845</span>
+          </a>
+          </div>
+          <div className="flex items-start gap-3 text-gray-400 text-sm">
+          <a
+            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+            config.venueFull
+            )}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-start gap-3 text-gray-400 hover:text-purple-400 transition-colors"
+          >
+            <MapPin className="w-5 h-5 mt-0.5 flex-shrink-0" />
+            <span>{config.venueFull}</span>
+          </a>
+          </div>
             </div>
           </div>
 
-          {/* Social Media & Newsletter */}
+          {/* Social Media */}
           <div className="space-y-4">
             <h4 className="text-white font-semibold text-lg">Follow Us</h4>
             <div className="flex gap-3">
               {config.socials.map((social, index) => (
-                <a
-                  key={index}
-                  href={social.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={social.label}
-                  className="w-10 h-10 rounded-lg bg-gray-800/50 border border-gray-700/50 flex items-center justify-center text-gray-400 hover:text-white hover:border-purple-500/50 hover:bg-purple-500/10 transition-all duration-200"
-                >
-                  {getSocialIcon(social.label)}
-                </a>
+          <a
+            key={index}
+            href={social.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={social.label}
+            className="w-10 h-10 rounded-lg bg-gray-800/50 border border-gray-700/50 flex items-center justify-center text-gray-400 hover:text-white hover:border-purple-500/50 hover:bg-purple-500/10 transition-all duration-200"
+          >
+            {getSocialIcon(social.label)}
+          </a>
               ))}
-            </div>
-
-            {/* Newsletter Signup */}
-            <div className="mt-6">
-              <p className="text-gray-400 text-sm mb-3">Stay updated</p>
-              <div className="flex gap-2">
-                <input
-                  type="email"
-                  placeholder="Your email"
-                  className="flex-1 px-4 py-2 bg-gray-800/50 border border-gray-700/50 rounded-lg text-white text-sm focus:outline-none focus:border-purple-500/50 transition-colors"
-                />
-                <button className="px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-500 rounded-lg text-white hover:opacity-90 transition-opacity">
-                  <Send className="w-4 h-4" />
-                </button>
-              </div>
             </div>
           </div>
         </div>

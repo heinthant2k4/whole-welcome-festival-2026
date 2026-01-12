@@ -71,7 +71,7 @@ const QuickInfoCards: React.FC<QuickInfoCardsProps> = ({ config }) => {
   ];
 
   return (
-    <section className="w-full px-4 py-12">
+    <section className="w-full px-4 py-12" id="info">
       <div className="max-w-6xl mx-auto">
         <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-8">
           Festival Informations

@@ -17,8 +17,26 @@ const body = Sora({
 export const metadata: Metadata = {
   title: "The Whole Welcome Festival 2026 | Jan 17 | Wyndham Grand Yangon",
   description:
-    "The Whole Welcome Festival 2026. Jan 17, 2026 (10AM–6PM) at Wyndham Grand Yangon Hotel, Myanmar. Where University Life Begins.",
+    "The Whole Welcome Festival 2026. Jan 17, 2026 (10AM–6PM) at Wyndham Grand Yangon, Myanmar. Where University Life Begins.",
+  openGraph: {
+    title: "The Whole Welcome Festival 2026",
+    description:
+      "Jan 17, 2026 · Wyndham Grand Yangon · Where University Life Begins",
+    url: "https://wwfest.vercel.app",
+    siteName: "The Whole Welcome Festival 2026",
+    images: [
+      {
+        url: "/hero/MainPoster.JPG",
+        width: 1200,
+        height: 630,
+        alt: "The Whole Welcome Festival 2026 poster",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
 };
+
 
 export default function RootLayout({
   children,
