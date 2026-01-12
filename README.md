@@ -104,9 +104,32 @@ These were left intentionally to develop and fast-working page in 24 hours.
 
 ---
 
-## Author
+## Team & Contributions
 
-Built by **Boolean Web Solution** 
+This project was built by a team of three under **Boolean Web Solutions**.
+
+### Hein Thant Zaw
+- Led technical direction and overall system design
+- Selected the tech stack and defined system architecture
+- Implemented core frontend structure (Next.js App Router, Tailwind)
+- Designed and implemented SEO strategy (metadata, Open Graph)
+- Set up Google Search Console verification and analytics
+- Handled deployment, production fixes, and performance optimization
+
+### Ye Thiha Htun
+- Focused on UI implementation and visual sections
+- Built artists and dance group lineup cards
+- Worked on layout consistency and visual presentation
+- Assisted with content structuring and asset integration
+
+### Thuriya Ye Naing
+- Implemented motion and interaction effects using Framer Motion
+- Built scroll-to-reveal animations and section transitions
+- Developed the partners section
+- Communicated with the client initially and helped acquire the project
+
+The team collaborated to ship a functional MVP quickly, with clear ownership across architecture, UI, animation, and client coordination.
+**Roles were defined organically based on strengths and availability during a rapid MVP timeline.**
 
 
 ---
