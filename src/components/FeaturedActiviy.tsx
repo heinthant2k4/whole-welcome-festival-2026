@@ -2,12 +2,16 @@
 
 import GradientButton from "@/components/GradientButton";
 import { siteConfig } from "@/lib/siteConfig";
+import ScrollReveal from "./ScrollReveal";
+
 
 export default function FeaturedActivity() {
   return (
     <section className="px-5 py-16 sm:px-8" id="activity">
       <div className="mx-auto max-w-5xl">
         {/* Section header */}
+                <ScrollReveal direction="up" delay={0.1}>
+
         <div className="mb-10 text-center">
           <p className="text-xs uppercase tracking-[0.18em] text-white/50">
             Featured Activity
@@ -66,8 +70,11 @@ export default function FeaturedActivity() {
             beginnings.
           </p>
         </div>
+        </ScrollReveal>
 
         {/* Activity card */}
+                <ScrollReveal direction="up" delay={0.3}>
+
         <div className="relative overflow-hidden rounded-3xl border border-white/12 bg-black/40 p-6 backdrop-blur-xl shadow-[0_22px_80px_rgba(0,0,0,0.55)] sm:p-10">
           {/* glass highlights */}
           <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_20%_15%,rgba(255,255,255,0.12),transparent_45%)]" />
@@ -124,6 +131,8 @@ export default function FeaturedActivity() {
             </div>
           </div>
         </div>
+                </ScrollReveal>
+
       </div>
     </section>
   );

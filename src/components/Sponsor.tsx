@@ -54,7 +54,7 @@ const Sponsorship: React.FC = () => {
             Interested in sponsoring future events?
           </p>
           <a
-            href="#contact"
+            href="mailto:thewholewelcomefestival2026@gmail.com"
             className="inline-block px-8 py-3 bg-gradient-to-r from-pink-500 to-purple-500 rounded-lg text-white font-medium hover:shadow-lg hover:shadow-purple-500/50 hover:scale-105 transition-all duration-300"
           >
             Contact Us
