@@ -146,6 +146,11 @@ const Footer: React.FC<FooterProps> = ({ config }) => {
               © 2026 {config.eventTitle}. All rights reserved.
             </p>
           </div>
+          <div className="flex justify-center items-center pt-2">
+            <p className="text-gray-500 text-xs text-center">
+              Powered by {config.devName}.
+            </p>
+          </div>
         </div>
       </div>
     </footer>

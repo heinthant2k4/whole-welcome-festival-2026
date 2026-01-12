@@ -15,6 +15,7 @@ export type SiteConfig = {
   partnerLine?: string; // leave blank until we get further info
   eventMail?: string;
   eventPhone?: string;
+  devName: string;
 };
 
 /**
@@ -36,6 +37,6 @@ export const siteConfig: SiteConfig = {
     { label: "TikTok", href: "https://www.tiktok.com/@the.whole.welcome?_r=1&_t=ZS-92zILFL27Hx" },
   ],
   eventMail: "thewholewelcomefestival2026@gmail.com",
-  eventPhone: "+95 9 681 321845"
-  // partnerLine: "blah blah partners go here",
+  eventPhone: "+95 9 681 321845",
+  devName: "Boolean Web Solutions",
 };
