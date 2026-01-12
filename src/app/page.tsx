@@ -10,7 +10,6 @@ import { siteConfig } from "@/lib/siteConfig";
 import FeaturedActivity from "@/components/FeaturedActiviy";
 import Navbar from "@/components/Navbar";
 import EventActivityPartner from "@/components/EventActivityPartner";
-import { Analytics } from "@vercel/analytics/next"
 <script
   type="application/ld+json"
   dangerouslySetInnerHTML={{
