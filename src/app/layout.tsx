@@ -2,7 +2,7 @@
 import { Space_Grotesk, Sora } from "next/font/google";
 import type { Metadata } from "next";
 import "./globals.css";
-
+import { Analytics } from "@vercel/analytics/next"
 
 const heading = Space_Grotesk({
   subsets: ["latin"],
@@ -68,6 +68,7 @@ export default function RootLayout({
 
 
         {children}
+        <Analytics />
       </body>
     </html>
   );
