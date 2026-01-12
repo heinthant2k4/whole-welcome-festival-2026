@@ -19,35 +19,50 @@ export default function Navbar() {
   const [shown, setShown] = useState(false);
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState<string>("about");
+  const [progress, setProgress] = useState(0);
 
   // Reveal on scroll + active section detection
   useEffect(() => {
-    const sectionIds = navItems.map((n) => n.id);
+  const sectionIds = navItems.map((n) => n.id);
+  let raf = 0;
 
-    const computeActive = () => {
-      // A "probe line" slightly below the navbar
+  const onScroll = () => {
+    if (raf) return;
+    raf = requestAnimationFrame(() => {
+      raf = 0;
+
+      // show navbar after scroll
+      setShown(window.scrollY > 96);
+
+      // progress (0 → 1)
+      const doc = document.documentElement;
+      const max = doc.scrollHeight - window.innerHeight;
+      const p = max > 0 ? window.scrollY / max : 0;
+      setProgress(Math.min(1, Math.max(0, p)));
+
+      // active section detection
       const probeY = 140;
-
       for (const id of sectionIds) {
         const el = document.getElementById(id);
         if (!el) continue;
 
         const r = el.getBoundingClientRect();
-        if (r.top <= probeY && r.bottom >= probeY) return id;
+        if (r.top <= probeY && r.bottom >= probeY) {
+          setActive(id);
+          break;
+        }
       }
-      return active; // keep current if nothing matches
-    };
+    });
+  };
 
-    const onScroll = () => {
-      setShown(window.scrollY > 96);
-      setActive(computeActive());
-    };
-
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+      onScroll();
+      window.addEventListener("scroll", onScroll, { passive: true });
+      return () => {
+        cancelAnimationFrame(raf);
+        window.removeEventListener("scroll", onScroll);
+      };
   }, [navItems]);
+
 
   // ESC close + body scroll lock while menu is open
   useEffect(() => {
@@ -92,17 +107,33 @@ export default function Navbar() {
       >
         <div className="mx-auto max-w-6xl px-5 sm:px-8">
           {/* Neon framed pill */}
-          <div className="relative mt-4">
+          <div className="relative mt-4"
+           style={
+              {
+                // 0..1
+                ["--p" as any]: progress,
+                // convert to percentage for gradients
+                ["--px" as any]: `${Math.round(progress * 100)}%`,
+              } as React.CSSProperties
+            }>
             {/* Outer neon glow */}
             <div
-              className={[
-                "pointer-events-none absolute -inset-1 rounded-full blur-md",
-                "bg-gradient-to-r from-cyan-300/45 via-cyan-400/20 to-fuchsia-400/30",
-              ].join(" ")}
+              className="
+                pointer-events-none absolute -inset-1 rounded-full blur-md
+                opacity-90 transition-opacity duration-300
+              "
+              style={{
+                background:
+                  "radial-gradient(120% 140% at var(--px) 50%, rgba(34,211,238,0.55), rgba(34,211,238,0.18) 35%, rgba(236,72,153,0.22) 70%, transparent 100%)",
+              }}
             />
             {/* Inner rim */}
-            <div className="pointer-events-none absolute inset-0 rounded-full ring-1 ring-inset ring-cyan-300/30" />
-
+            <div
+              className="pointer-events-none absolute inset-0 rounded-full ring-1 ring-inset"
+              style={{
+                boxShadow: "inset 0 0 0 1px rgba(34,211,238,0.18)",
+              }}
+            />
             {/* Actual bar */}
             <div
               className={[

@@ -25,17 +25,9 @@ const QuickInfoCards: React.FC<QuickInfoCardsProps> = ({ config }) => {
     day: "numeric",
   });
 
-  // Format time range
-  const startTime = startDate.toLocaleTimeString("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true,
-  });
-  const endTime = endDate.toLocaleTimeString("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true,
-  });
+  // Default time range
+  const startTime = "10:00 AM";
+  const endTime = "6:00 PM";
   const timeRange = `${startTime} - ${endTime}`;
 
   const dateTimeCards: InfoCard[] = [

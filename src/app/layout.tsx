@@ -18,10 +18,13 @@ export const metadata: Metadata = {
   title: "The Whole Welcome Festival 2026 | Jan 17 | Wyndham Grand Yangon",
   description:
     "The Whole Welcome Festival 2026. Jan 17, 2026 (10AM–6PM) at Wyndham Grand Yangon, Myanmar. Where University Life Begins.",
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.cio"},  
   openGraph: {
     title: "The Whole Welcome Festival 2026 | Jan 17 at Wyndham Grand Yangon",
     description:
-    "The Whole Welcome Festival 2026 takes place on Jan 17 (10AM–6PM) at Wyndham Grand Yangon, Myanmar. A student and youth festival where university life begins.",
+      "The Whole Welcome Festival 2026 takes place on Jan 17 (10AM–6PM) at Wyndham Grand Yangon, Myanmar. A student and youth festival where university life begins.",
     url: "https://wwfest.vercel.app",
     siteName: "The Whole Welcome Festival 2026",
     images: [
