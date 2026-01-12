@@ -21,7 +21,7 @@ export default function EventActivityPartner() {
     {
       id: "uyab",
       name: "United Youth Association of Burma",
-      title: "UYAB",
+      title: "UYA",
       description:
         "One of the youth-led charitable organizations, which was born to support Orphans, Retirement home, Animal Shelter, Disabled, Grass roots, Rural Areas , Youth Empowerment and to share Philanthropic Attitudes to youth & public.",
       image: "/EventActivityPartner/EventActivityPartner2.JPG",
