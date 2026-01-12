@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { Users, Trophy, Briefcase, Heart } from "lucide-react";
+import ScrollReveal from "./ScrollReveal";
 
 interface Partner {
   id: string;
@@ -74,6 +75,8 @@ export default function EventActivityPartner() {
     <section id="partners" className="px-5 py-16 sm:px-8 bg-black/20">
       <div className="mx-auto max-w-6xl">
         {/* Section Header */}
+                <ScrollReveal direction="up" delay={0.1}>
+
         <div className="text-center mb-12">
           <p className="text-xs uppercase tracking-[0.18em] text-white/50 mb-3">
             Event Activity Partners
@@ -87,15 +90,25 @@ export default function EventActivityPartner() {
             the festival.
           </p>
         </div>
+        </ScrollReveal>
 
         {/* Partners Grid */}
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
           {partners.map((partner, index) => (
+             <ScrollReveal
+              key={partner.id}
+              direction="up"
+              delay={0.2 + index * 0.1}
+            >
             <PartnerCard key={partner.id} partner={partner} index={index} />
+                        </ScrollReveal>
+
           ))}
         </div>
 
         {/* Bottom CTA */}
+                <ScrollReveal direction="up" delay={0.6}>
+
         <div className="mt-16 text-center">
           <div className="relative overflow-hidden rounded-3xl border border-white/12 bg-black/40 p-8 backdrop-blur-xl shadow-[0_22px_80px_rgba(0,0,0,0.55)]">
             <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_20%_15%,rgba(255,255,255,0.12),transparent_45%)]" />
@@ -117,6 +130,8 @@ export default function EventActivityPartner() {
             </a>
           </div>
         </div>
+                                </ScrollReveal>
+
       </div>
     </section>
   );

@@ -5,6 +5,8 @@ import type { SiteConfig } from "@/lib/siteConfig";
 import Countdown from "@/components/Countdown";
 import { Badge } from "@/components/ui/badge";
 import GradientButton from "./GradientButton";
+import ScrollReveal from "./ScrollReveal";
+
 
 export default function Hero({ config }: { config: SiteConfig }) {
   return (
@@ -12,6 +14,8 @@ export default function Hero({ config }: { config: SiteConfig }) {
       <div className="mx-auto max-w-6xl">
         <div className="grid gap-8 lg:grid-cols-2 lg:items-center">
           {/* LEFT: Poster (split glow frame) */}
+                    <ScrollReveal direction="left" delay={0.2}>
+
           <div className="relative">
             <div className="relative overflow-hidden rounded-3xl border border-white/12 bg-white/5 p-4 backdrop-blur-xl shadow-[0_18px_60px_rgba(0,0,0,0.55)]">
               {/* split neon rim */}
@@ -41,9 +45,12 @@ export default function Hero({ config }: { config: SiteConfig }) {
               <div className="pointer-events-none absolute inset-0 rounded-3xl bg-[radial-gradient(circle_at_30%_15%,rgba(255,255,255,0.10),transparent_45%)]" />
             </div>
           </div>
+          </ScrollReveal>
 
           {/* RIGHT: Glass info card */}
-          <div className="relative overflow-hidden rounded-3xl border border-white/12 bg-black/45 p-6 backdrop-blur-xl shadow-[0_22px_80px_rgba(0,0,0,0.60)] sm:p-8">
+                    <ScrollReveal direction="right" delay={0.4}>
+
+          <div className="relative overflow-hidden Founded-3xl border border-white/12 bg-black/45 p-6 backdrop-blur-xl shadow-[0_22px_80px_rgba(0,0,0,0.60)] sm:p-8">
             {/* top-left glass highlight */}
             <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_20%_15%,rgba(255,255,255,0.12),transparent_45%)]" />
 
@@ -69,6 +76,8 @@ export default function Hero({ config }: { config: SiteConfig }) {
               ) : null}
             </div>
           </div>
+                    </ScrollReveal>
+
         </div>
       </div>
     </section>

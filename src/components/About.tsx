@@ -1,5 +1,7 @@
 import type { SiteConfig } from "@/lib/siteConfig";
 import { Music, Users, MapPin, Ticket } from "lucide-react";
+import ScrollReveal from "./ScrollReveal";
+
 
 export default function About({ config }: { config: SiteConfig }) {
   const highlights = [
@@ -21,6 +23,7 @@ export default function About({ config }: { config: SiteConfig }) {
     <section id="about" className="px-5 py-16 sm:px-8">
       <div className="mx-auto max-w-4xl">
         {/* Main Heading */}
+        <ScrollReveal direction="up" delay={0.1}>
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
             University Life Begins Here
@@ -29,8 +32,10 @@ export default function About({ config }: { config: SiteConfig }) {
             Ready for your first and most epic step into university life? 🔥
           </p>
         </div>
+        </ScrollReveal>
 
         {/* Description */}
+                <ScrollReveal direction="up" delay={0.2}>
         <div className="bg-gray-800/30 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-8 mb-8">
           <h3 className="text-xl font-semibold text-white mb-6">
             THE WHOLE WELCOME FESTIVAL 2026
@@ -55,6 +60,7 @@ export default function About({ config }: { config: SiteConfig }) {
             {config.venueFull}.
           </p>
         </div>
+        </ScrollReveal>
 
         {/* Ticket Info */}
         <div className="bg-gradient-to-r from-pink-500/10 to-purple-500/10 border border-purple-500/30 rounded-2xl p-6">
@@ -93,11 +99,15 @@ export default function About({ config }: { config: SiteConfig }) {
         </div>
 
         {/* CTA */}
+                <ScrollReveal direction="up" delay={0.4}>
+
         <div className="text-center mt-8">
           <p className="text-gray-300 text-lg">
             See you all at the festival! 🤘🏻❤️‍🔥
           </p>
         </div>
+                </ScrollReveal>
+
       </div>
     </section>
   );
