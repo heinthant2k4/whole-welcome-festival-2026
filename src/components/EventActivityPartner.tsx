@@ -23,7 +23,7 @@ export default function EventActivityPartner() {
       name: "United Youth Association of Burma",
       title: "UYAB",
       description:
-        "A leading youth organization dedicated to empowering Myanmar's young generation through community engagement, leadership development, and social initiatives.",
+        "One of the youth-led charitable organizations, which was born to support Orphans, Retirement home, Animal Shelter, Disabled, Grass roots, Rural Areas , Youth Empowerment and to share Philanthropic Attitudes to youth & public.",
       image: "/EventActivityPartner/EventActivityPartner2.JPG",
       category: "Youth Organization",
       icon: <Heart className="w-6 h-6" />,
@@ -123,7 +123,7 @@ export default function EventActivityPartner() {
               Let&apos;s create meaningful experiences together!
             </p>
             <a
-              href="#contact"
+              href="mailto:thewholewelcomefestival2026@gmail.com"
               className="inline-block px-8 py-3 bg-gradient-to-r from-pink-500 to-purple-500 rounded-xl text-white font-medium hover:shadow-lg hover:shadow-purple-500/50 hover:scale-105 transition-all duration-300"
             >
               Partner With Us
