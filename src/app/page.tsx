@@ -7,7 +7,7 @@ import Footer from "@/components/Footer";
 import { siteConfig } from "@/lib/siteConfig";
 import FeaturedActivity from "@/components/FeaturedActiviy";
 import Navbar from "@/components/Navbar";
-
+import EventActivityPartner from "@/components/EventActivityPartner";
 <script
   type="application/ld+json"
   dangerouslySetInnerHTML={{
@@ -45,6 +45,7 @@ export default function Page() {
       <QuickInfoCards config={siteConfig} />
       <About config={siteConfig} />
       <FeaturedActivity />
+      <EventActivityPartner/>
       <Sponsorship />
       <Footer config={siteConfig} />
     </main>
