@@ -3,6 +3,8 @@ import Hero from "@/components/Hero";
 import About from "@/components/About";
 import QuickInfoCards from "@/components/QuickInfo";
 import Sponsorship from "@/components/Sponsor";
+import ArtistSection from "@/components/Artist";
+import DanceCrewSection from "@/components/DanceCrew";
 import Footer from "@/components/Footer";
 import { siteConfig } from "@/lib/siteConfig";
 import FeaturedActivity from "@/components/FeaturedActiviy";
@@ -34,19 +36,20 @@ import Navbar from "@/components/Navbar";
       },
     }),
   }}
-/>
-
+/>;
 
 export default function Page() {
   return (
     <main className="min-h-dvh">
-      <Navbar/>
+      <Navbar />
       <Hero config={siteConfig} />
       <QuickInfoCards config={siteConfig} />
       <About config={siteConfig} />
       <FeaturedActivity />
+      <ArtistSection />
+      <DanceCrewSection />
       <Sponsorship />
       <Footer config={siteConfig} />
     </main>
   );
-} 
+}
