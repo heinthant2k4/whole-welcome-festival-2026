@@ -48,6 +48,7 @@ export default function Page() {
       <FeaturedActivity />
       <ArtistSection />
       <DanceCrewSection />
+      <EventActivityPartner />
       <Sponsorship />
       <Footer config={siteConfig} />
     </main>
