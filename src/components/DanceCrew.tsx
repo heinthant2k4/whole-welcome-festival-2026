@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
+import { useSwipeable } from "react-swipeable";
 
 type Crew = {
   id: number;
@@ -44,6 +45,18 @@ const CrewCard = ({ crew, index }: { crew: Crew; index: number }) => {
 
 export default function DanceCrewCarousel() {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const { ref: swipeRef, ...swipeHandlers } = useSwipeable({
+    onSwipedLeft: () => {
+      if (scrollRef.current) {
+        scrollRef.current.scrollLeft += scrollRef.current.clientWidth;
+      }
+    },
+    onSwipedRight: () => {
+      if (scrollRef.current) {
+        scrollRef.current.scrollLeft -= scrollRef.current.clientWidth;
+      }
+    },
+  });
 
   useEffect(() => {
     const scrollContainer = scrollRef.current;
@@ -103,7 +116,13 @@ export default function DanceCrewCarousel() {
 
         {/* Carousel Container */}
         <div
-          ref={scrollRef}
+          ref={(node) => {
+            scrollRef.current = node;
+            if (swipeRef) {
+              swipeRef(node);
+            }
+          }}
+          {...swipeHandlers}
           className="flex gap-4 overflow-x-auto py-4 scrollbar-hide"
           style={{
             scrollbarWidth: "none",
