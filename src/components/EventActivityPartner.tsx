@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { Users, Trophy, Briefcase, Heart } from "lucide-react";
+import { Users, Trophy, Briefcase, Heart, LandmarkIcon, Landmark, MapIcon } from "lucide-react";
 import ScrollReveal from "./ScrollReveal";
 
 interface Partner {
@@ -69,69 +69,77 @@ export default function EventActivityPartner() {
         "Interactive Gaming Zone",
       ],
     },
+    {
+      id: "culture_sports",
+      name: "Culure, Sports & Tourism Myanmar Co.,Ltd",
+      title: "CST Myanmar",
+      description:
+        "Culture, Sports & Tourism Myanmar Company Limited (C.S.T Myanmar) is a Yangon-based tour operator dedicated to showcasing Myanmar's vibrant heritage through immersive cultural, sports, and tourism experiences.",
+      image: "/EventActivityPartner/EventActivityPartner3.JPG",
+      category: "Tour Operators",
+      icon: <MapIcon className="w-6 h-6" />,
+      color: "from-blue-500 to-yellow-500 via-green-500 via-purple-500 to-red-500",
+      activities: ["To be announced on the festival day"],
+    },
   ];
 
   return (
     <section id="partners" className="px-5 py-16 sm:px-8 bg-black/20">
       <div className="mx-auto max-w-6xl">
         {/* Section Header */}
-                <ScrollReveal direction="up" delay={0.1}>
-
-        <div className="text-center mb-12">
-          <p className="text-xs uppercase tracking-[0.18em] text-white/50 mb-3">
-            Event Activity Partners
-          </p>
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            Powered by Amazing Partners
-          </h2>
-          <p className="text-white/70 max-w-2xl mx-auto">
-            We&apos;re proud to collaborate with these incredible organizations to
-            bring you diverse activities, workshops, and experiences throughout
-            the festival.
-          </p>
-        </div>
+        <ScrollReveal direction="up" delay={0.1}>
+          <div className="text-center mb-12">
+            <p className="text-xs uppercase tracking-[0.18em] text-white/50 mb-3">
+              Event Activity Partners
+            </p>
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+              Powered by Amazing Partners
+            </h2>
+            <p className="text-white/70 max-w-2xl mx-auto">
+              We&apos;re proud to collaborate with these incredible organizations to
+              bring you diverse activities, workshops, and experiences throughout
+              the festival.
+            </p>
+          </div>
         </ScrollReveal>
 
         {/* Partners Grid */}
-        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {partners.map((partner, index) => (
-             <ScrollReveal
+            <ScrollReveal
               key={partner.id}
               direction="up"
               delay={0.2 + index * 0.1}
             >
-            <PartnerCard key={partner.id} partner={partner} index={index} />
-                        </ScrollReveal>
-
+              <PartnerCard key={partner.id} partner={partner} index={index} />
+            </ScrollReveal>
           ))}
         </div>
 
         {/* Bottom CTA */}
-                <ScrollReveal direction="up" delay={0.6}>
+        <ScrollReveal direction="up" delay={0.6}>
+          <div className="mt-16 text-center">
+            <div className="relative overflow-hidden rounded-3xl border border-white/12 bg-black/40 p-8 backdrop-blur-xl shadow-[0_22px_80px_rgba(0,0,0,0.55)]">
+              <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_20%_15%,rgba(255,255,255,0.12),transparent_45%)]" />
+              <div className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-br from-fuchsia-500/10 via-transparent to-cyan-400/10" />
 
-        <div className="mt-16 text-center">
-          <div className="relative overflow-hidden rounded-3xl border border-white/12 bg-black/40 p-8 backdrop-blur-xl shadow-[0_22px_80px_rgba(0,0,0,0.55)]">
-            <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_20%_15%,rgba(255,255,255,0.12),transparent_45%)]" />
-            <div className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-br from-fuchsia-500/10 via-transparent to-cyan-400/10" />
-            
-            <Users className="w-12 h-12 mx-auto mb-4 text-purple-400" />
-            <h3 className="text-2xl font-semibold text-white mb-3">
-              Join Forces With Us
-            </h3>
-            <p className="text-white/70 mb-6 max-w-xl mx-auto">
-              Interested in becoming an activity partner for future events?
-              Let&apos;s create meaningful experiences together!
-            </p>
-            <a
-              href="mailto:thewholewelcomefestival2026@gmail.com"
-              className="inline-block px-8 py-3 bg-gradient-to-r from-pink-500 to-purple-500 rounded-xl text-white font-medium hover:shadow-lg hover:shadow-purple-500/50 hover:scale-105 transition-all duration-300"
-            >
-              Partner With Us
-            </a>
+              <Users className="w-12 h-12 mx-auto mb-4 text-purple-400" />
+              <h3 className="text-2xl font-semibold text-white mb-3">
+                Join Forces With Us
+              </h3>
+              <p className="text-white/70 mb-6 max-w-xl mx-auto">
+                Interested in becoming an activity partner for future events?
+                Let&apos;s create meaningful experiences together!
+              </p>
+              <a
+                href="mailto:thewholewelcomefestival2026@gmail.com"
+                className="inline-block px-8 py-3 bg-gradient-to-r from-pink-500 to-purple-500 rounded-xl text-white font-medium hover:shadow-lg hover:shadow-purple-500/50 hover:scale-105 transition-all duration-300"
+              >
+                Partner With Us
+              </a>
+            </div>
           </div>
-        </div>
-                                </ScrollReveal>
-
+        </ScrollReveal>
       </div>
     </section>
   );
@@ -171,7 +179,7 @@ function PartnerCard({
           priority={index === 0}
           unoptimized
         />
-        
+
         {/* Icon Badge on Image */}
         <div
           className={`absolute top-4 right-4 inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br ${partner.color} shadow-lg backdrop-blur-sm bg-opacity-90`}
