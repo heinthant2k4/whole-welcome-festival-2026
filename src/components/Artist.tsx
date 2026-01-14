@@ -14,14 +14,19 @@ type Artist = {
   image: string;
 };
 
-const artists: Artist[] = [
-  { id: 1, image: "/artist/Artist1.JPG" },
-  { id: 2, image: "/artist/Artist2.JPG" },
-  { id: 3, image: "/artist/Artist3.JPG" },
-  { id: 4, image: "/artist/Artist4.JPG" },
-  { id: 5, image: "/artist/Artist5.JPG" },
-  { id: 6, image: "/artist/Artist6.JPG" },
+const artistImages = [
+  "/artist/Artist3.JPG",
+  "/artist/Artist5.JPG",
+  "/artist/Artist4.JPG",
+  "/artist/Artist2.JPG",
+  "/artist/Artist1.JPG",
+  "/artist/Artist6.JPG",
 ];
+
+const artists: Artist[] = artistImages.map((image) => ({
+  id: Math.floor(Math.random() * 1_000_000_000),
+  image,
+}));
 
 const swipeConfidenceThreshold = 90;
 
@@ -77,8 +82,6 @@ interface SwipeCardProps {
 const SwipeCard = ({ artist, direction, onSwipe }: SwipeCardProps) => {
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-220, 220], [-12, 12]);
-  const likeOpacity = useTransform(x, [0, 110], [0, 1]);
-  const nopeOpacity = useTransform(x, [0, -110], [0, 1]);
 
   return (
     <motion.div
@@ -100,23 +103,23 @@ const SwipeCard = ({ artist, direction, onSwipe }: SwipeCardProps) => {
       style={{ x, rotate }}
     >
       <ArtistCard artist={artist} size="lg" />
-      <motion.div
-        className="absolute left-4 top-5 rounded-full border border-emerald-300/80 bg-emerald-500/20 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-emerald-200"
-        style={{ opacity: likeOpacity }}
-      >
-        Like
-      </motion.div>
-      <motion.div
-        className="absolute right-4 top-5 rounded-full border border-rose-300/80 bg-rose-500/20 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-rose-200"
-        style={{ opacity: nopeOpacity }}
-      >
-        Nope
-      </motion.div>
     </motion.div>
   );
-};
+}
+
+// Shuffle utility to randomize artist order (Fisher-Yates)
+function shuffle<T>(array: T[]) {
+  const a = array.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
 
 export default function ArtistSection() {
+  // Use a shuffled copy so the showcased order is random each mount
+  const [shuffledArtists] = useState<Artist[]>(() => shuffle([...artists]));
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(0);
   const [showHint, setShowHint] = useState(true);
@@ -125,15 +128,21 @@ export default function ArtistSection() {
     setDirection(nextDirection);
     setShowHint(false);
     if (nextDirection === -1) {
-      setCurrentIndex((prev) => (prev === artists.length - 1 ? 0 : prev + 1));
+      setCurrentIndex((prev) =>
+        prev === shuffledArtists.length - 1 ? 0 : prev + 1
+      );
     } else {
-      setCurrentIndex((prev) => (prev === 0 ? artists.length - 1 : prev - 1));
+      setCurrentIndex((prev) =>
+        prev === 0 ? shuffledArtists.length - 1 : prev - 1
+      );
     }
   };
 
   const getVisibleIndices = () => {
-    const prev = currentIndex === 0 ? artists.length - 1 : currentIndex - 1;
-    const next = currentIndex === artists.length - 1 ? 0 : currentIndex + 1;
+    const prev =
+      currentIndex === 0 ? shuffledArtists.length - 1 : currentIndex - 1;
+    const next =
+      currentIndex === shuffledArtists.length - 1 ? 0 : currentIndex + 1;
     return { prev, current: currentIndex, next };
   };
 
@@ -170,12 +179,12 @@ export default function ArtistSection() {
           {/* Mobile Tinder View */}
           <div className="relative h-[400px] w-full max-w-[320px] sm:hidden">
             <div className="absolute inset-0 flex items-center justify-center z-0 scale-[0.94] translate-y-3 opacity-70">
-              <ArtistCard artist={artists[next]} size="lg" />
+              <ArtistCard artist={shuffledArtists[next]} size="lg" />
             </div>
             <AnimatePresence mode="wait" custom={direction}>
               <SwipeCard
                 key={current}
-                artist={artists[current]}
+                artist={shuffledArtists[current]}
                 direction={direction}
                 onSwipe={handleSwipe}
               />
@@ -211,7 +220,7 @@ export default function ArtistSection() {
                 exit={{ opacity: 0, scale: 0.8 }}
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
               >
-                <ArtistCard artist={artists[current]} size="lg" />
+                <ArtistCard artist={shuffledArtists[current]} size="lg" />
               </motion.div>
             </AnimatePresence>
           </div>
@@ -228,7 +237,7 @@ export default function ArtistSection() {
 
             {/* Dots */}
             <div className="flex gap-1.5">
-              {artists.map((_, index) => (
+              {shuffledArtists.map((_, index) => (
                 <button
                   key={index}
                   onClick={() => setCurrentIndex(index)}

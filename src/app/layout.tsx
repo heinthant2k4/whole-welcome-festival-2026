@@ -19,8 +19,8 @@ export const metadata: Metadata = {
   description:
     "The Whole Welcome Festival 2026. Jan 17, 2026 (10AM–6PM) at Wyndham Grand Yangon, Myanmar. Where University Life Begins.",
   icons: {
-    icon: "/favicon-26.ico",
-    shortcut: "/favicon-26.ico"},  
+    icon: "/favicon26.ico",
+    shortcut: "/favicon26.ico"},  
   openGraph: {
     title: "The Whole Welcome Festival 2026 | Jan 17 at Wyndham Grand Yangon",
     description:
