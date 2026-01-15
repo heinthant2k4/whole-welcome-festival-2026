@@ -303,59 +303,72 @@ export default function DanceCrewCarousel() {
     }
   }
 
-  async function handleVote(crewId: number) {
-    if (hasVoted || votingClosed || isLoading) return;
+ // In handleVote function, add optimistic update:
+async function handleVote(crewId: number) {
+  if (hasVoted || votingClosed || isLoading) return;
 
-    setIsLoading(true);
-    setVotingError("");
+  // ✅ OPTIMISTIC UPDATE - Show success immediately
+  setHasVoted(true);
+  setVotedFor(crewId);
+  localStorage.setItem("dance_crew_vote", crewId.toString());
+  
+  // Update UI immediately (optimistic)
+  setCrews((current) =>
+    current.map((crew) =>
+      crew.id === crewId ? { ...crew, votes: crew.votes + 1 } : crew
+    )
+  );
 
-    try {
-      const res = await fetch("/api/vote", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          crewId,
-          fingerprint: userFingerprint,
-        }),
-      });
+  setShowSuccessModal(true);
+  setTimeout(() => setShowSuccessModal(false), 3000);
 
-      const data = await res.json();
+  // ✅ Then do the actual API call in background
+  try {
+    const res = await fetch("/api/vote", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        crewId,
+        fingerprint: userFingerprint,
+      }),
+    });
 
-      if (!res.ok) {
-        if (res.status === 409) {
-          // Already voted
-          setHasVoted(true);
-          setVotedFor(data.votedFor);
-          localStorage.setItem("dance_crew_vote", data.votedFor.toString());
-          setVotingError("You already voted!");
-        } else {
-          setVotingError(data.error || "Failed to vote");
-        }
-        return;
+    const data = await res.json();
+
+    if (!res.ok) {
+      // Rollback on error
+      if (res.status === 409) {
+        // Already voted - keep the optimistic state
+        setVotedFor(data.votedFor);
+      } else {
+        // Other error - rollback
+        setHasVoted(false);
+        setVotedFor(null);
+        localStorage.removeItem("dance_crew_vote");
+        setCrews((current) =>
+          current.map((crew) =>
+            crew.id === crewId ? { ...crew, votes: crew.votes - 1 } : crew
+          )
+        );
+        setVotingError(data.error || "Failed to vote");
+        setTimeout(() => setVotingError(""), 3000);
       }
-
-      // Success!
-      setHasVoted(true);
-      setVotedFor(crewId);
-      localStorage.setItem("dance_crew_vote", crewId.toString());
-
-      // Update local state immediately
-      setCrews((current) =>
-        current.map((crew) =>
-          crew.id === crewId ? { ...crew, votes: crew.votes + 1 } : crew
-        )
-      );
-
-      setShowSuccessModal(true);
-      setTimeout(() => setShowSuccessModal(false), 3000);
-    } catch (error) {
-      console.error("Error voting:", error);
-      setVotingError("Failed to submit vote");
-    } finally {
-      setIsLoading(false);
-      setTimeout(() => setVotingError(""), 3000);
     }
+  } catch (error) {
+    // Network error - rollback
+    console.error("Error voting:", error);
+    setHasVoted(false);
+    setVotedFor(null);
+    localStorage.removeItem("dance_crew_vote");
+    setCrews((current) =>
+      current.map((crew) =>
+        crew.id === crewId ? { ...crew, votes: crew.votes - 1 } : crew
+      )
+    );
+    setVotingError("Failed to submit vote");
+    setTimeout(() => setVotingError(""), 3000);
   }
+}
 
   function shareVote() {
     const crew = crews.find((c) => c.id === votedFor);

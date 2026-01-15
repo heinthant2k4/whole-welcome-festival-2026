@@ -1,0 +1,55 @@
+# artillery.yml
+config:
+  target: "http://localhost:3000"
+  phases:
+    # Warm up - 5 users/sec for 30 seconds
+    - duration: 30
+      arrivalRate: 5
+      name: "Warm up"
+    
+    # Ramp up - gradually increase to 25 users/sec
+    - duration: 60
+      arrivalRate: 5
+      rampTo: 25
+      name: "Ramp up"
+    
+    # Sustained load - 25 users/sec for 2 minutes
+    - duration: 120
+      arrivalRate: 25
+      name: "Sustained load"
+    
+    # Peak - 50 users/sec for 1 minute
+    - duration: 60
+      arrivalRate: 50
+      name: "Peak load"
+
+  processor: "./artillery-processor.js"
+
+scenarios:
+  - name: "Browse and vote"
+    weight: 70
+    flow:
+      # Load crews (cached)
+      - get:
+          url: "/api/crews"
+          expect:
+            - statusCode: 200
+      
+      # Think time (realistic user behavior)
+      - think: 3
+      
+      # Vote (unique fingerprint)
+      - post:
+          url: "/api/vote"
+          json:
+            crewId: "{{ $randomNumber(1, 11) }}"
+            fingerprint: "{{ generateUUID() }}"
+          expect:
+            - statusCode: [200, 409] # 200 success, 409 duplicate
+
+  - name: "Just browse (no vote)"
+    weight: 30
+    flow:
+      - get:
+          url: "/api/crews"
+      - think: 5

@@ -2,6 +2,9 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+// Enable caching - data refreshes every 10 seconds
+export const revalidate = 10; // ISR: Incremental Static Regeneration
+
 export async function GET() {
   try {
     const crews = await prisma.danceCrew.findMany({
@@ -26,7 +29,12 @@ export async function GET() {
       votes: crew._count.votes,
     }));
 
-    return NextResponse.json(crewsWithVotes);
+    return NextResponse.json(crewsWithVotes, {
+      headers: {
+        // Add cache headers
+        "Cache-Control": "public, s-maxage=10, stale-while-revalidate=20",
+      },
+    });
   } catch (error) {
     console.error("❌ Error fetching crews:", error);
     return NextResponse.json(
