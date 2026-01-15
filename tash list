@@ -1,0 +1,15 @@
+[33m273b848[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mvotingMvp[m[33m, [m[1;31morigin/votingMvp[m[33m)[m feat: add voting functionality with fingerprint verification and crew selection
+[33m53e7753[m finalize prisma setup and validate load capacity with Artillery
+[33m6851491[m the MVP working version done
+[33meb8ed87[m database seeding to neon has been completed
+[33m6f605cf[m chore: downgrade to Prisma 6 and verify Neon DB connection
+[33mdaa1509[m[33m ([m[1;31morigin/main[m[33m, [m[1;32mmain[m[33m)[m Refactor artist and dance crew components for improved structure and styling; update favicon
+[33mf27814a[m[33m ([m[1;31morigin/votingPilot[m[33m)[m Enhance artist swipe functionality and UI improvements
+[33m9c0be4f[m Responsiveness and new partner addition
+[33m6044dee[m Readme tweaks
+[33m97db037[m Read me
+[33m074281a[m minor
+[33m4766660[m Update favicon (cache bust)
+[33m2abf8a9[m Merge branch 'main' of https://github.com/heinthant2k4/whole-welcome-festival-2026
+[33m90948b2[m anal
+[33m7d3fbc2[m npm i @vercel/analytics
