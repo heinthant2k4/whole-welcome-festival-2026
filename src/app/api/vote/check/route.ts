@@ -1,41 +1,35 @@
-// src/app/api/vote/check/route.ts
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export async function POST(request: NextRequest) {
+export async function POST(req: Request) {
   try {
-    const body = await request.json();
-    const { fingerprint } = body;
+    const body = await req.json().catch(() => ({}));
+    const fingerprint =
+      typeof body?.fingerprint === "string" ? body.fingerprint : "";
 
     if (!fingerprint) {
       return NextResponse.json(
-        { error: "Missing fingerprint" },
+        { canVote: false },
         { status: 400 }
       );
     }
 
-    const vote = await prisma.vote.findUnique({
+    const existingVote = await prisma.vote.findFirst({
       where: { fingerprint },
-      select: {
-        crewId: true,
-        timestamp: true,
-      },
+      select: { id: true },
     });
 
-    if (vote) {
-      return NextResponse.json({
-        hasVoted: true,
-        votedFor: vote.crewId,
-        votedAt: vote.timestamp,
-      });
-    }
-
-    return NextResponse.json({ hasVoted: false });
-  } catch (error) {
-    console.error("❌ Error checking vote:", error);
     return NextResponse.json(
-      { error: "Failed to check vote" },
-      { status: 500 }
+      { canVote: !existingVote },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("❌ vote/check error:", error);
+
+    // Fail-open: submit route is the real lock
+    return NextResponse.json(
+      { canVote: true },
+      { status: 200 }
     );
   }
 }

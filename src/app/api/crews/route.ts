@@ -1,9 +1,7 @@
-// src/app/api/crews/route.ts
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-// Enable caching - data refreshes every 10 seconds
-export const revalidate = 10; // ISR: Incremental Static Regeneration
+export const revalidate = 10;
 
 export async function GET() {
   try {
@@ -20,7 +18,7 @@ export async function GET() {
       },
     });
 
-    const crewsWithVotes = crews.map((crew) => ({
+    const result = crews.map((crew) => ({
       id: crew.id,
       name: crew.name,
       image: crew.image,
@@ -29,16 +27,15 @@ export async function GET() {
       votes: crew._count.votes,
     }));
 
-    return NextResponse.json(crewsWithVotes, {
+    return NextResponse.json(result, {
       headers: {
-        // Add cache headers
         "Cache-Control": "public, s-maxage=10, stale-while-revalidate=20",
       },
     });
   } catch (error) {
-    console.error("❌ Error fetching crews:", error);
+    console.error("❌ crews GET error:", error);
     return NextResponse.json(
-      { error: "Failed to fetch crews" },
+      { error: "Failed to load crews" },
       { status: 500 }
     );
   }

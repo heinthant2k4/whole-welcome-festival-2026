@@ -1,148 +1,112 @@
-// src/app/api/vote/route.ts
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { checkRateLimit } from "@/lib/rateLimit";
+import { rateLimit } from "@/lib/rateLimit";
 
-// In-memory cache for recent fingerprints (expires after 1 hour)
-const recentVotes = new Map<string, { crewId: number; timestamp: number }>();
-const CACHE_TTL = 3600000; // 1 hour
+const DEV_BYPASS_VOTE_LOCK =
+  process.env.NODE_ENV !== "production";
 
-// Clean up old entries every 5 minutes
-setInterval(() => {
-  const now = Date.now();
-  for (const [fingerprint, data] of recentVotes.entries()) {
-    if (now - data.timestamp > CACHE_TTL) {
-      recentVotes.delete(fingerprint);
-    }
-  }
-}, 300000);
 
-export async function POST(request: NextRequest) {
-  const rateLimit = checkRateLimit(request, {
-    windowMs: 60000,
-    maxRequests: 5,
-  });
+function getIP(req: Request) {
+  const xff = req.headers.get("x-forwarded-for");
+  return xff ? xff.split(",")[0].trim() : "unknown";
+}
 
-  if (!rateLimit.allowed) {
-    return NextResponse.json(
-      {
-        error: "Too many requests. Please try again later.",
-        resetIn: Math.ceil(rateLimit.resetIn / 1000),
-      },
-      {
-        status: 429,
-        headers: {
-          "Retry-After": Math.ceil(rateLimit.resetIn / 1000).toString(),
-        },
-      }
-    );
-  }
+async function verifyArtilleryToken(_token: string) {
+  // placeholder for now
+  return true;
+}
+
+export async function POST(req: Request) {
   try {
-    const body = await request.json();
-    const { crewId, fingerprint } = body;
+    const ip = getIP(req);
 
-    // Validation
-    if (!crewId || !fingerprint) {
+    const rl = await rateLimit({
+      key: `vote:${ip}`,
+      limit: 30,
+      windowMs: 5 * 60 * 1000,
+    });
+
+    if (!rl.ok) {
       return NextResponse.json(
-        { error: "Missing crewId or fingerprint" },
+        { success: false, error: "Rate limited" },
+        { status: 429 }
+      );
+    }
+
+    const body = await req.json().catch(() => ({}));
+
+    const crewId = typeof body?.crewId === "number" ? body.crewId : null;
+    const fingerprint =
+      typeof body?.fingerprint === "string" ? body.fingerprint : "";
+    const artilleryToken =
+      typeof body?.artilleryToken === "string"
+        ? body.artilleryToken
+        : "";
+
+    if (!crewId || !fingerprint || !artilleryToken) {
+      return NextResponse.json(
+        { success: false, error: "Invalid payload" },
         { status: 400 }
       );
     }
 
-    // ✅ FAST CHECK: Check in-memory cache first (no DB hit!)
-    const cachedVote = recentVotes.get(fingerprint);
-    if (cachedVote) {
-      return NextResponse.json(
-        {
-          error: "You have already voted",
-          votedFor: cachedVote.crewId,
-        },
-        { status: 409 }
-      );
-    }
-
-    // ✅ Check database (only if not in cache)
-    const existingVote = await prisma.vote.findUnique({
-      where: { fingerprint },
-      select: { crewId: true }, // Only fetch what we need
+    // Validate the crewId
+    const crew = await prisma.danceCrew.findUnique({
+      where: { id: crewId },
     });
 
-    if (existingVote) {
-      // Add to cache for future fast lookups
-      recentVotes.set(fingerprint, {
-        crewId: existingVote.crewId,
-        timestamp: Date.now(),
-      });
-
+    if (!crew) {
+      console.error("❌ Invalid crewId received:", crewId);
       return NextResponse.json(
-        {
-          error: "You have already voted",
-          votedFor: existingVote.crewId,
-        },
+        { success: false, error: "Invalid crewId" },
+        { status: 400 }
+      );
+    }
+
+    const ok = await verifyArtilleryToken(artilleryToken);
+    if (!ok) {
+      return NextResponse.json(
+        { success: false, error: "Bot rejected" },
+        { status: 403 }
+      );
+    }
+
+    const existingVote = await prisma.vote.findFirst({
+      where: {
+        crewId,
+        fingerprint,
+      },
+    });
+
+    if (existingVote && !DEV_BYPASS_VOTE_LOCK) {
+      return NextResponse.json(
+        { success: false, error: "Already voted" },
         { status: 409 }
       );
     }
 
-    // Get IP and user agent
-    const ipAddress =
-      request.headers.get("x-forwarded-for") ||
-      request.headers.get("x-real-ip") ||
-      "unknown";
-    const userAgent = request.headers.get("user-agent") || "unknown";
-
-    // ✅ Use transaction for atomic operations
-    const [vote, crew] = await prisma.$transaction([
-      prisma.vote.create({
+    try {
+      await prisma.vote.create({
         data: {
           crewId,
           fingerprint,
-          ipAddress,
-          userAgent,
         },
-      }),
-      prisma.danceCrew.findUnique({
-        where: { id: crewId },
-        select: { name: true },
-      }),
-    ]);
-
-    if (!crew) {
-      return NextResponse.json({ error: "Crew not found" }, { status: 404 });
+      });
+    } catch (err: any) {
+      if (err?.code === "P2002") {
+        return NextResponse.json(
+          { success: false, error: "Already voted" },
+          { status: 409 }
+        );
+      }
+      throw err;
     }
 
-    // Add to cache
-    recentVotes.set(fingerprint, {
-      crewId,
-      timestamp: Date.now(),
-    });
-
-    // Get updated vote count (cached query)
-    const voteCount = await prisma.vote.count({
-      where: { crewId },
-    });
-
-    console.log(`✅ Vote recorded: ${crew.name} (${voteCount} total votes)`);
-
-    return NextResponse.json(
-      {
-        success: true,
-        vote: {
-          id: vote.id,
-          crewId: vote.crewId,
-          timestamp: vote.timestamp,
-        },
-        voteCount,
-      },
-      {
-        headers: {
-          "Cache-Control": "no-store", // Don't cache vote responses
-        },
-      }
-    );
+    return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
-    console.error("❌ Error creating vote:", error);
+    console.error("❌ vote submit error:", error);
     return NextResponse.json(
-      { error: "Failed to record vote" },
+      { success: false, error: "Server error" },
       { status: 500 }
     );
   }
