@@ -1,39 +1,15 @@
-// lib/prisma.ts
 import { PrismaClient } from "@prisma/client";
 
-const prismaClientSingleton = () => {
-  return new PrismaClient({
-    log:
-      process.env.NODE_ENV === "development"
-        ? ["query", "error", "warn"]
-        : ["error"],
-  });
+const globalForPrisma = globalThis as unknown as {
+  prisma: PrismaClient | undefined;
 };
 
-declare global {
-  var prismaGlobal: undefined | ReturnType<typeof prismaClientSingleton>;
-}
-
-const prisma = globalThis.prismaGlobal ?? prismaClientSingleton();
-
-export { prisma };
+export const prisma =
+  globalForPrisma.prisma ??
+  new PrismaClient({
+    log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
+  });
 
 if (process.env.NODE_ENV !== "production") {
-  globalThis.prismaGlobal = prisma;
+  globalForPrisma.prisma = prisma;
 }
-
-// Optional: Connection helpers
-export const connectDB = async () => {
-  try {
-    await prisma.$connect();
-    console.log("✅ DB Connected via Prisma (Neon)");
-  } catch (error) {
-    console.error("❌ DB Connection Error:", error);
-    process.exit(1);
-  }
-};
-
-export const disconnectDB = async () => {
-  await prisma.$disconnect();
-  console.log("🔌 DB Disconnected");
-};
