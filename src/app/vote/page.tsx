@@ -1,8 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation"; // Import useRouter
-import { useEffect, useState } from "react";;
+import { useEffect, useState } from "react";
 import { isVotingOpen } from "@/lib/votingWindow";
+
 
 import {
   Dialog,
@@ -25,6 +26,38 @@ type Crew = {
 type VoteState = "idle" | "confirming" | "submitting" | "voted" | "error";
 
 export default function VotePage() {
+  // State for votingPaused and overrideSchedule
+  const [votingPaused, setVotingPaused] = useState(false);
+  const [overrideSchedule, setOverrideSchedule] = useState(false);
+  const [stateLoaded, setStateLoaded] = useState(false);
+
+  // Poll voting state from server
+  useEffect(() => {
+    let cancelled = false;
+
+    const fetchState = async () => {
+      try {
+        const res = await fetch("/api/vote/state", { cache: "no-store" });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!cancelled) {
+          setVotingPaused(Boolean(data?.paused));
+          setOverrideSchedule(Boolean(data?.overrideSchedule));
+          setStateLoaded(true);
+        }
+      } catch {
+        // If fetch fails, keep stateLoaded false or set it true with safe defaults
+      }
+    };
+
+    fetchState();
+    const id = setInterval(fetchState, 5000);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, []);
+
   const router = useRouter(); // Initialize the router
   const [crews, setCrews] = useState<Crew[]>([]);
   const [loading, setLoading] = useState(true);
@@ -35,6 +68,7 @@ export default function VotePage() {
   const [selectedCrew, setSelectedCrew] = useState<Crew | null>(null);
   const [error, setError] = useState("");
   const [helpOpen, setHelpOpen] = useState(false);
+
 
 
   /* -------------------------
@@ -127,6 +161,15 @@ export default function VotePage() {
   async function submitVote() {
     if (!fingerprint || !selectedCrew) return;
 
+    const scheduleOpen = isVotingOpen();
+    const canVoteNow = !votingPaused && (scheduleOpen || overrideSchedule);
+
+    if (!canVoteNow) {
+      setError(votingPaused ? "Voting is currently paused." : "Voting is not open yet.");
+      setVoteState("error");
+      return;
+    }
+
     try {
       setVoteState("submitting");
 
@@ -142,6 +185,14 @@ export default function VotePage() {
           artilleryToken,
         }),
       });
+
+      if (res.status === 403) {
+        const msg = (await res.json().catch(() => null))?.error;
+        setError(msg || "Voting is not available right now.");
+        setVoteState("error");
+        setSelectedCrew(null);
+        return;
+      }
 
       const data = await res.json().catch(() => null);
 
@@ -167,7 +218,28 @@ export default function VotePage() {
   /* -------------------------
      Render
   -------------------------- */
-  if (!isVotingOpen()) {
+  const scheduleOpen = isVotingOpen();
+  const canVoteNow = !votingPaused && (scheduleOpen || overrideSchedule);
+
+  if (!stateLoaded) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-black text-white">
+        <p className="text-white/70">Checking voting status...</p>
+      </div>
+    );
+  }
+
+  if (votingPaused) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-black text-white">
+        <p className="text-white/70">
+          Voting is currently paused. Please check back later.
+        </p>
+      </div>
+    );
+  }
+
+  if (!scheduleOpen && !overrideSchedule) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-black text-white">
         <p className="text-white/70">
@@ -201,6 +273,17 @@ export default function VotePage() {
             Choose wisely. Each device gets one vote.
           </p>
         </div>
+
+      {votingPaused && (
+        <div className="mb-8 mx-auto max-w-2xl">
+          <div className="rounded-xl border border-yellow-500/30 bg-yellow-500/10 backdrop-blur-sm p-4">
+            <p className="text-yellow-300 font-medium">Voting is currently paused.</p>
+            <p className="text-yellow-200/70 text-sm mt-1">
+              You can still view crews, but voting is temporarily disabled. Please check back soon.
+            </p>
+          </div>
+        </div>
+      )}
 
         {/* Status Messages */}
         {voteState === "voted" && (
@@ -240,18 +323,13 @@ export default function VotePage() {
               key={crew.id}
               className="group relative rounded-2xl border bg-black/40 backdrop-blur-xl transition-all duration-300
                          hover:-translate-y-2 hover:shadow-[0_0_50px_rgba(255,0,0,0.2)]"
-              style={{
-                borderColor: crew.color,
-              }}
+              style={{ borderColor: crew.color }}
             >
               {/* Neon glow layer */}
               <div
                 className="pointer-events-none absolute inset-0 rounded-2xl opacity-20 group-hover:opacity-40 transition-opacity duration-300"
-                style={{
-                  boxShadow: `0 0 60px ${crew.color}`,
-                }}
+                style={{ boxShadow: `0 0 60px ${crew.color}` }}
               />
-
               <div className="relative flex h-full flex-col p-4 gap-4">
                 {/* Image */}
                 <div className="relative overflow-hidden rounded-xl aspect-[4/5]">
@@ -260,11 +338,9 @@ export default function VotePage() {
                     alt={crew.name}
                     className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
                   />
-
                   {/* Overlay */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
                 </div>
-
                 {/* Name & Description */}
                 <div className="flex-1">
                   <h3
@@ -277,36 +353,37 @@ export default function VotePage() {
                     {crew.description}
                   </p>
                 </div>
-
                 {/* Vote button */}
                 <button
                   disabled={
+                    !canVoteNow ||
                     !canVote ||
                     voteState === "submitting" ||
                     voteState === "voted"
                   }
                   onClick={() => {
+                    if (!canVoteNow) return;
                     setSelectedCrew(crew);
                     setVoteState("confirming");
-                    }}
-                    className={`
+                  }}
+                  className={`
                     w-full rounded-full py-3.5 text-sm font-bold tracking-widest
                     transition-all duration-300 relative overflow-hidden
                     ${
                       voteState === "voted"
-                      ? "bg-white/5 text-white/30 cursor-not-allowed border border-white/10"
-                      : "bg-gradient-to-r from-fuchsia-500 via-purple-500 to-cyan-500 text-black hover:shadow-[0_0_40px_rgba(255,0,255,0.7)] active:scale-95"
+                        ? "bg-white/5 text-white/30 cursor-not-allowed border border-white/10"
+                        : "bg-gradient-to-r from-fuchsia-500 via-purple-500 to-cyan-500 text-black hover:shadow-[0_0_40px_rgba(255,0,255,0.7)] active:scale-95"
                     }
-                    `}
-                  >
+                  `}
+                >
                   {voteState === "voted" ? (
                     <span className="flex items-center justify-center gap-2">
                       <Check className="w-4 h-4" />
                       VOTED
                     </span>
-                  ) : (
-                    "VOTE NOW"
-                  )}
+                  ) : votingPaused ? (
+                    "PAUSED"
+                  ) : ("VOTE NOW")}
                 </button>
               </div>
             </div>
@@ -317,7 +394,7 @@ export default function VotePage() {
             Confirm Modal - FIXED
         -------------------------- */}
         <Dialog
-          open={voteState === "confirming" || voteState === "submitting"}
+          open={voteState === "confirming" || voteState === "submitting" || votingPaused}
           onOpenChange={(open) => {
             if (!open && voteState === "confirming") {
               setVoteState("idle");

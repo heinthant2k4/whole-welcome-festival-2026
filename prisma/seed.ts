@@ -100,6 +100,17 @@ async function main() {
   }
 
   console.log("✅ Seeded", crews.length, "dance crews");
+
+    // Add initial voting state
+    await prisma.votingState.upsert({
+      where: { id: 1 },
+      update: {},
+      create: { id: 1, paused: false },
+    });
+
+  console.log("✅ Seeded initial voting state");
+
+  
 }
 
 main()

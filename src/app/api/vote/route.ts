@@ -18,8 +18,22 @@ async function verifyArtilleryToken(_token: string) {
 }
 
 export async function POST(req: Request) {
+
   try {
     const ip = getIP(req);
+
+    // Check if voting is paused
+    const state = await prisma.votingState.findUnique({
+      where: { id: 1 },
+      select: { paused: true },
+    });
+
+    if (state?.paused) {
+      return NextResponse.json(
+        { error: "Voting is currently paused" },
+        { status: 403, headers: { "Cache-Control": "no-store, max-age=0" } }
+      );
+    }
 
     const rl = await rateLimit({
       key: `vote:${ip}`,

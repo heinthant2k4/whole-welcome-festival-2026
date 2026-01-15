@@ -1,18 +1,12 @@
-// prisma/schema.prisma
-// This is your Prisma schema file for The Whole Welcome Festival
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider   = "prisma-client-js"
   engineType = "binary"
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
-
-// --- Festival Voting Models ---
 
 model DanceCrew {
   id          Int      @id @default(autoincrement())
@@ -22,27 +16,31 @@ model DanceCrew {
   description String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-
-  // Relations
-  votes Vote[]
+  votes       Vote[]
 
   @@map("dance_crews")
 }
 
 model Vote {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   crewId      Int
-  fingerprint String
+  fingerprint String    @unique
   ipAddress   String?
   userAgent   String?
-  timestamp   DateTime @default(now())
+  timestamp   DateTime  @default(now())
+  crew        DanceCrew @relation(fields: [crewId], references: [id], onDelete: Cascade)
 
-  // Relations
-  crew DanceCrew @relation(fields: [crewId], references: [id], onDelete: Cascade)
-
-  @@unique([fingerprint])
   @@index([crewId])
   @@index([fingerprint])
   @@index([timestamp])
   @@map("votes")
+}
+
+model VotingState {
+  id               Int      @id @default(1)
+  paused           Boolean  @default(false)
+  updatedAt        DateTime @updatedAt
+  overrideSchedule Boolean  @default(false)
+
+  @@map("voting_state")
 }
