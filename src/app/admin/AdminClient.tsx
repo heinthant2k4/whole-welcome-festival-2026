@@ -1,166 +1,319 @@
 "use client";
 
 import * as React from "react";
-import { 
-  Download, 
-  Search, 
-  Vote, 
-  Users, 
-  Activity, 
-  Clock, 
-  Trophy 
-} from "lucide-react";
+import { Download, Search, RefreshCw } from "lucide-react";
+import { toast, Toaster } from "sonner";
 
-// shadcn/ui components (Assumed paths)
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
+
+type Crew = {
+  id: number;
+  name: string;
+  votes: number;
+  percentage: number;
+};
 
 type AdminSummary = {
+  crews: Crew[];
   totalVotes: number;
   lastUpdated: string | null;
-  generatedAt: string;
-  crews: Array<{ id: number; name: string; votes: number; percentage: number }>;
+  generatedAt?: string;
 };
+
+function formatDateTime(value?: string | null) {
+  if (!value) return "—";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return value;
+  return d.toLocaleString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
 
 export default function AdminClient() {
   const [data, setData] = React.useState<AdminSummary | null>(null);
-  const [search, setSearch] = React.useState("");
+  const [loading, setLoading] = React.useState(true);
+  const [searchTerm, setSearchTerm] = React.useState("");
+  const [isRefreshing, setIsRefreshing] = React.useState(false);
 
-  async function refresh() {
+  const fetchData = React.useCallback(async (manual = false) => {
+    if (manual) setIsRefreshing(true);
+
     try {
       const res = await fetch("/api/admin/summary", { cache: "no-store" });
-      if (!res.ok) throw new Error("Failed to fetch summary");
-      setData(await res.json());
-    } catch (err) {
-      console.error("Dashboard sync error:", err);
-    }
-  }
+      if (!res.ok) throw new Error(`Failed to fetch summary (${res.status})`);
 
-  React.useEffect(() => {
-    refresh();
-    const t = setInterval(refresh, 7000);
-    return () => clearInterval(t);
+      const result: AdminSummary = await res.json();
+      // Server already sorts desc in the ideal setup, but keeping it safe:
+      result.crews = [...result.crews].sort((a, b) => b.votes - a.votes);
+
+      setData(result);
+
+      if (manual) {
+        toast.success("Refreshed", {
+          description: "Dashboard data updated.",
+        });
+      }
+    } catch (err: any) {
+      toast.error("Refresh failed", {
+        description: err?.message ?? "Unknown error",
+      });
+    } finally {
+      setLoading(false);
+      setIsRefreshing(false);
+    }
   }, []);
 
-  const filteredCrews = data?.crews.filter(c => 
-    c.name.toLowerCase().includes(search.toLowerCase())
-  ) || [];
+  React.useEffect(() => {
+    fetchData(false);
+    const t = setInterval(() => fetchData(false), 10_000);
+    return () => clearInterval(t);
+  }, [fetchData]);
 
-  if (!data) return (
-    <div className="min-h-screen bg-[#0a0a0c] flex items-center justify-center">
-      <div className="text-cyan-400 animate-pulse font-mono tracking-widest">INITIALIZING_SYSTEM...</div>
-    </div>
-  );
+  const filteredCrews =
+    data?.crews.filter((c) =>
+      c.name.toLowerCase().includes(searchTerm.trim().toLowerCase())
+    ) ?? [];
 
-  return (
-    <div className="min-h-screen bg-[#0a0a0c] text-slate-100 p-4 md:p-8 space-y-8">
-      
-      {/* HEADER */}
-      <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <h1 className="text-4xl font-black tracking-tighter bg-gradient-to-r from-fuchsia-500 via-purple-500 to-cyan-400 bg-clip-text text-transparent uppercase italic">
-            Command Center
-          </h1>
-          <div className="flex items-center gap-3 mt-2 font-mono text-xs text-slate-500">
-            <span className="flex h-2 w-2 rounded-full bg-cyan-500 shadow-[0_0_8px_#06b6d4] animate-pulse" />
-            LIVE DATA STREAM // SYNCED: {data.generatedAt}
-          </div>
-        </div>
-        
-        <Button variant="outline" className="border-fuchsia-500/30 bg-fuchsia-500/5 text-fuchsia-400 hover:bg-fuchsia-500/20">
-          <Download className="mr-2 h-4 w-4" /> Export Results
-        </Button>
-      </header>
-
-      {/* STATS GRID */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="Total Submissions" value={data.totalVotes} icon={<Vote className="text-fuchsia-500" />} />
-        <StatCard label="Registered Crews" value={data.crews.length} icon={<Users className="text-cyan-400" />} />
-        <StatCard label="System Status" value="Online" icon={<Activity className="text-green-400" />} />
-        <StatCard label="Last Refresh" value={data.lastUpdated || "N/A"} icon={<Clock className="text-slate-400" />} />
+  if (loading && !data) {
+    return (
+      <div className="p-10">
+        <Card>
+          <CardHeader>
+            <CardTitle>Loading admin summary…</CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-muted-foreground">
+            Fetching the latest vote counts.
+          </CardContent>
+        </Card>
       </div>
+    );
+  }
 
-      {/* SEARCH & LIST */}
-      <Card className="bg-black/40 border-white/10 backdrop-blur-xl">
-        <CardHeader className="border-b border-white/5 space-y-4">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <CardTitle className="text-lg font-bold flex items-center gap-2">
-              <Trophy className="h-5 w-5 text-yellow-500" /> Crew Leaderboard
-            </CardTitle>
-            <div className="relative w-full md:w-72">
-              <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-500" />
-              <Input 
-                placeholder="Search crew name..." 
-                className="pl-9 bg-white/5 border-white/10 focus-visible:ring-fuchsia-500"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader className="bg-white/5">
-              <TableRow className="border-white/10 hover:bg-transparent">
-                <TableHead className="w-16 text-center font-bold">POS</TableHead>
-                <TableHead>Crew Identity</TableHead>
-                <TableHead className="text-right">Votes</TableHead>
-                <TableHead className="w-[40%]">Distribution</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredCrews.map((crew, idx) => (
-                <TableRow key={crew.id} className="border-white/5 hover:bg-white/5 transition-colors">
-                  <TableCell className="text-center font-mono text-slate-500">
-                    {(idx + 1).toString().padStart(2, '0')}
-                  </TableCell>
-                  <TableCell className="font-bold text-slate-200">
-                    {crew.name}
-                  </TableCell>
-                  <TableCell className="text-right font-mono text-cyan-400">
-                    {crew.votes.toLocaleString()}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-4">
-                      <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
-                        <div 
-                          className="h-full bg-gradient-to-r from-fuchsia-600 to-cyan-500 shadow-[0_0_12px_rgba(192,38,211,0.4)]"
-                          style={{ width: `${crew.percentage}%` }}
-                        />
-                      </div>
-                      <span className="text-xs font-mono w-12 text-right text-slate-400">
-                        {crew.percentage.toFixed(1)}%
-                      </span>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
+  const topCrew = data?.crews?.[0];
 
-function StatCard({ label, value, icon }: { label: string, value: string | number, icon: React.ReactNode }) {
   return (
-    <Card className="bg-white/5 border-white/10 overflow-hidden relative group">
-      {/* Decorative corner accent */}
-      <div className="absolute top-0 right-0 w-8 h-8 bg-gradient-to-bl from-white/10 to-transparent pointer-events-none" />
-      <CardContent className="p-6 flex items-center justify-between">
-        <div>
-          <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500 font-bold mb-1">{label}</p>
-          <p className="text-3xl font-black tracking-tighter text-slate-100 group-hover:text-cyan-400 transition-colors">
-            {value}
-          </p>
+    <div
+      className="space-y-6 min-h-screen"
+      style={{
+        background:
+          "linear-gradient(135deg, #f8fafc 0%, #e0e7ef 100%)",
+        // fallback for dark mode, you can adjust as needed
+        // backgroundColor: "#f8fafc",
+      }}
+    >
+      <Toaster position="bottom-right" />
+
+      {/* Overlay to cover any layout image background */}
+      <div
+        aria-hidden="true"
+        className="fixed inset-0 z-0 pointer-events-none"
+        style={{
+          background:
+            "linear-gradient(135deg, rgba(248,250,252,0.98) 0%, rgba(224,231,239,0.98) 100%)",
+          backdropFilter: "blur(2px)",
+        }}
+      />
+
+      <div className="relative z-10">
+        {/* Header */}
+        <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+          <div className="space-y-1">
+            <h1 className="text-2xl font-semibold">Admin Dashboard</h1>
+            <p className="text-sm text-muted-foreground">
+              Live vote summary (auto-refresh every 10s).
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <Button
+              onClick={() => fetchData(true)}
+              disabled={isRefreshing}
+              className="gap-2"
+            >
+              <RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
+              {isRefreshing ? "Refreshing…" : "Refresh"}
+            </Button>
+
+            {/* Export Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="gap-2">
+                  <Download className="h-4 w-4" />
+                  Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem asChild>
+                  <a href="/api/admin/export?format=csv" download>
+                    Export as CSV
+                  </a>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <a href="/api/admin/export?format=json" download>
+                    Export as JSON
+                  </a>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
-        <div className="h-12 w-12 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center shadow-inner">
-          {icon}
+
+        {/* Stats */}
+        <div className="grid gap-4 md:grid-cols-3">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Total votes
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-semibold tabular-nums">
+                {data?.totalVotes?.toLocaleString() ?? "0"}
+              </div>
+              <div className="mt-2 text-xs text-muted-foreground">
+                Last vote at: {formatDateTime(data?.lastUpdated)}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Leading crew
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-lg font-semibold truncate">
+                {topCrew?.name ?? "—"}
+              </div>
+              <div className="mt-1 text-sm text-muted-foreground tabular-nums">
+                {topCrew ? `${topCrew.votes.toLocaleString()} votes` : "—"}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Snapshot time
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-sm">
+                {formatDateTime(data?.generatedAt ?? new Date().toISOString())}
+              </div>
+              <div className="mt-2 text-xs text-muted-foreground">
+                Polling is enabled.
+              </div>
+            </CardContent>
+          </Card>
         </div>
-      </CardContent>
-    </Card>
+
+        {/* Table controls */}
+        <Card>
+          <CardHeader className="space-y-2">
+            <CardTitle className="text-base">Vote breakdown</CardTitle>
+
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-sm text-muted-foreground">
+                Sorted by votes (descending). Showing {filteredCrews.length} of{" "}
+                {data?.crews?.length ?? 0}.
+              </p>
+
+              <div className="relative w-full sm:w-80">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search crew name…"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+            </div>
+          </CardHeader>
+
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[60px]">#</TableHead>
+                  <TableHead>Crew</TableHead>
+                  <TableHead className="text-right">Votes</TableHead>
+                  <TableHead className="w-[240px]">Share</TableHead>
+                </TableRow>
+              </TableHeader>
+
+              <TableBody>
+                {filteredCrews.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={4} className="text-muted-foreground">
+                      No crews match your search.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredCrews.map((crew, idx) => (
+                    <TableRow key={crew.id}>
+                      <TableCell className="text-muted-foreground tabular-nums">
+                        {idx + 1}
+                      </TableCell>
+
+                      <TableCell>
+                        <div className="font-medium">{crew.name}</div>
+                        <div className="text-xs text-muted-foreground">
+                          Crew ID: {crew.id}
+                        </div>
+                      </TableCell>
+
+                      <TableCell className="text-right tabular-nums font-medium">
+                        {crew.votes.toLocaleString()}
+                      </TableCell>
+
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
+                            <div
+                              className="h-full bg-primary"
+                              style={{
+                                width: `${Math.min(
+                                  100,
+                                  Math.max(0, crew.percentage)
+                                )}%`,
+                              }}
+                            />
+                          </div>
+                          <div className="w-[64px] text-right tabular-nums text-sm">
+                            {crew.percentage.toFixed(2)}%
+                          </div>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
   );
 }

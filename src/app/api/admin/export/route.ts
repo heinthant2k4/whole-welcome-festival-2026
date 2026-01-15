@@ -1,4 +1,3 @@
-// app/api/admin/export/route.ts
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
@@ -17,28 +16,35 @@ export async function GET(req: Request) {
   const url = new URL(req.url);
   const format = (url.searchParams.get("format") ?? "csv").toLowerCase();
 
-  const [totalVotes, grouped, crews] = await Promise.all([
+  const [totalVotes, grouped, crews, lastAgg] = await Promise.all([
     prisma.vote.count(),
     prisma.vote.groupBy({ by: ["crewId"], _count: { _all: true } }),
     prisma.danceCrew.findMany({ select: { id: true, name: true } }),
+    prisma.vote.aggregate({ _max: { timestamp: true } }),
   ]);
 
-  const countsByCrew = new Map<number, number>();
-  for (const g of grouped) countsByCrew.set(g.crewId, g._count._all);
+  const countsByCrewId = new Map<number, number>();
+  for (const g of grouped) countsByCrewId.set(g.crewId, g._count._all);
 
   const rows = crews
     .map((c) => {
-      const votes = countsByCrew.get(c.id) ?? 0;
+      const votes = countsByCrewId.get(c.id) ?? 0;
       const percentage = totalVotes === 0 ? 0 : (votes / totalVotes) * 100;
       return { name: c.name, votes, percentage };
     })
     .sort((a, b) => b.votes - a.votes);
 
+  const payload = {
+    totalVotes,
+    lastUpdated: lastAgg._max.timestamp ? lastAgg._max.timestamp.toISOString() : null,
+    crews: rows,
+    generatedAt: new Date().toISOString(),
+  };
+
   if (format === "json") {
-    return NextResponse.json(
-      { totalVotes, crews: rows, generatedAt: new Date().toISOString() },
-      { headers: { "Cache-Control": "no-store, max-age=0" } }
-    );
+    return NextResponse.json(payload, {
+      headers: { "Cache-Control": "no-store, max-age=0" },
+    });
   }
 
   const csv = toCsv(rows);
