@@ -2,19 +2,18 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { isVotingOpen, getTimeRemaining } from "@/lib/votingWindow";
+import { isVotingOpen  } from "@/lib/votingWindow";
 import { motion, AnimatePresence } from "framer-motion";
 import { track } from "@vercel/analytics";
 
 export default function VoteCTA() {
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [remaining, setRemaining] = useState<ReturnType<typeof getTimeRemaining>>(null);
+
 
   useEffect(() => {
     const tick = () => {
       setOpen(isVotingOpen());
-      setRemaining(getTimeRemaining());
     };
     tick();
     const id = setInterval(tick, 60_000);
@@ -90,24 +89,7 @@ export default function VoteCTA() {
             )}
           </span>
         </motion.button>
-      </div>
-
-      {/* Countdown Timer */}
-      <AnimatePresence>
-        {!open && remaining && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-center"
-          >
-            <p className="text-[10px] uppercase tracking-[0.3em] text-white/40 mb-1">Coming Soon</p>
-            <p className="text-xl font-mono font-bold text-transparent bg-clip-text bg-gradient-to-b from-white to-white/20">
-              {String(remaining.hours).padStart(2, '0')}:
-              {String(remaining.minutes).padStart(2, '0')}
-            </p>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      </div>  
     </div>
   );
 }

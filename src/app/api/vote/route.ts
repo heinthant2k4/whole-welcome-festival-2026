@@ -2,9 +2,10 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/rateLimit";
 
-const DEV_BYPASS_VOTE_LOCK =
-  process.env.NODE_ENV !== "production";
+import { isVotingOpen } from "@/lib/votingWindow";
+import { shouldBypassVoteLock } from "@/lib/votePolicy";
 
+const DEV_BYPASS_VOTE_LOCK = process.env.NODE_ENV !== "production";
 
 function getIP(req: Request) {
   const xff = req.headers.get("x-forwarded-for");
@@ -50,6 +51,14 @@ export async function POST(req: Request) {
       );
     }
 
+    // Check if voting is open
+    if (!isVotingOpen()) {
+      return NextResponse.json(
+        { success: false, error: "Voting is not open yet" },
+        { status: 403 }
+      );
+    }
+
     // Validate the crewId
     const crew = await prisma.danceCrew.findUnique({
       where: { id: crewId },
@@ -71,14 +80,12 @@ export async function POST(req: Request) {
       );
     }
 
-    const existingVote = await prisma.vote.findFirst({
-      where: {
-        crewId,
-        fingerprint,
-      },
+    // Check if the user has already voted
+    const alreadyVoted = await prisma.vote.findUnique({
+      where: { fingerprint },
     });
 
-    if (existingVote && !DEV_BYPASS_VOTE_LOCK) {
+    if (alreadyVoted && !shouldBypassVoteLock()) {
       return NextResponse.json(
         { success: false, error: "Already voted" },
         { status: 409 }

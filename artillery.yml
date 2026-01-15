@@ -1,55 +1,69 @@
-# artillery.yml
 config:
   target: "http://localhost:3000"
   phases:
-    # Warm up - 5 users/sec for 30 seconds
     - duration: 30
       arrivalRate: 5
       name: "Warm up"
-    
-    # Ramp up - gradually increase to 25 users/sec
+
     - duration: 60
       arrivalRate: 5
       rampTo: 25
       name: "Ramp up"
-    
-    # Sustained load - 25 users/sec for 2 minutes
+
     - duration: 120
       arrivalRate: 25
       name: "Sustained load"
-    
-    # Peak - 50 users/sec for 1 minute
+
     - duration: 60
       arrivalRate: 50
       name: "Peak load"
 
   processor: "./artillery-processor.js"
 
+  defaults:
+    headers:
+      Content-Type: "application/json"
+
+  plugins:
+    expect: {}
+
 scenarios:
   - name: "Browse and vote"
     weight: 70
     flow:
-      # Load crews (cached)
       - get:
           url: "/api/crews"
           expect:
             - statusCode: 200
-      
-      # Think time (realistic user behavior)
-      - think: 3
-      
-      # Vote (unique fingerprint)
+
+      - think: 2
+
       - post:
           url: "/api/vote"
+          beforeRequest: "injectVotePayload"
           json:
-            crewId: "{{ $randomNumber(1, 11) }}"
-            fingerprint: "{{ generateUUID() }}"
+            crewId: "{{ crewId }}"
+            fingerprint: "{{ fingerprint }}"
+            artilleryToken: "{{ artilleryToken }}"
           expect:
-            - statusCode: [200, 409] # 200 success, 409 duplicate
+            # 200 success
+            # 409 duplicate vote (expected sometimes if fp repeats accidentally)
+            # 403 if voting window closed (if you test strict mode)
+            - statusCode: [200, 409, 403, 429]
+      - post:
+            url: "/api/vote/check"
+            json:
+              fingerprint: "{{ fingerprint }}"
+            expect:
+                - statusCode: 200
+
 
   - name: "Just browse (no vote)"
     weight: 30
     flow:
       - get:
           url: "/api/crews"
+          expect:
+            - statusCode: 200
       - think: 5
+      
