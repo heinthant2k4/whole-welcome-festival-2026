@@ -25,7 +25,7 @@ export async function POST(req: Request) {
     // Check if voting is paused
     const state = await prisma.votingState.findUnique({
       where: { id: 1 },
-      select: { paused: true },
+      select: { paused: true, overrideSchedule: true },
     });
 
     if (state?.paused) {
@@ -65,13 +65,14 @@ export async function POST(req: Request) {
       );
     }
 
-    // Check if voting is open
-    if (!isVotingOpen()) {
+    // Check if voting is open OR overridden
+    if (!isVotingOpen() && !state?.overrideSchedule) {
       return NextResponse.json(
         { success: false, error: "Voting is not open yet" },
         { status: 403 }
       );
     }
+
 
     // Validate the crewId
     const crew = await prisma.danceCrew.findUnique({

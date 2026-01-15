@@ -3,16 +3,10 @@
 import * as React from "react";
 import {
   Download,
-  Search,
-  RefreshCw,
-  Vote,
-  Trophy,
   Play,
   Pause,
   FileSpreadsheet,
   ChevronDown,
-  Filter,
-  Clock,
 } from "lucide-react";
 import { toast, Toaster } from "sonner";
 
