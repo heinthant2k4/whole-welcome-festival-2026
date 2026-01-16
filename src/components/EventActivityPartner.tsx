@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { Users, Trophy, Briefcase, Heart, LandmarkIcon, Landmark, MapIcon } from "lucide-react";
+import { Users, Trophy, Briefcase, Heart, LandmarkIcon, Landmark, MapIcon, Cpu } from "lucide-react";
 import ScrollReveal from "./ScrollReveal";
 
 interface Partner {
@@ -75,12 +75,30 @@ export default function EventActivityPartner() {
       title: "CST Myanmar",
       description:
         "Culture, Sports & Tourism Myanmar Company Limited (C.S.T Myanmar) is a Yangon-based tour operator dedicated to showcasing Myanmar's vibrant heritage through immersive cultural, sports, and tourism experiences.",
-      image: "/EventActivityPartner/EventActivityPartner3.JPG",
+      image: "/EventActivityPartner/EventActivityPartner4.JPG",
       category: "Tour Operators",
       icon: <MapIcon className="w-6 h-6" />,
       color: "from-blue-500 to-yellow-500 via-green-500 via-purple-500 to-red-500",
       activities: ["To be announced on the festival day"],
     },
+    {
+      id: "bool_solutions",
+      name: "Boolean Digital Solutions",
+      title: "Boolean DS",
+      description:
+        "Founded by three students, Boolean Digital Solutions builds fast, affordable, and impactful digital tools. We help small businesses and communities solve everyday problems through simple, reliable web solutions.",
+      image: "/EventActivityPartner/EventActivityPartner5.png",
+      category: "Digital Services",
+      icon: <Cpu className="w-6 h-6" />,
+      color: "from-navy-600 to-blue-600",
+      activities: [
+        "Web Solutions",
+        "Event Technology",
+        "Digital Posters & Pages",
+        "Custom Business Tools",
+      ],
+    }
+
   ];
 
   return (
