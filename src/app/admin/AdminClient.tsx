@@ -272,7 +272,7 @@ export default function AdminClient() {
                 size="sm"
                 onClick={() => updateVotingState({ paused: false })}
                 disabled={busy}
-                className="h-7 text-[11px] font-semibold bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm disabled:opacity-60"
+                className="h-7 text-[11px] font-semibold bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm disabled:opacity-60 text-black"
               >
                 <Play size={12} className="mr-1" /> Resume
               </Button>
@@ -283,7 +283,7 @@ export default function AdminClient() {
                     size="sm"
                     variant="destructive"
                     disabled={busy}
-                    className="h-7 text-[11px] font-semibold shadow-sm disabled:opacity-60"
+                    className="h-7 text-[11px] font-semibold shadow-sm disabled:opacity-60 text-black"
                   >
                     <Pause size={12} className="mr-1" /> Pause
                   </Button>
