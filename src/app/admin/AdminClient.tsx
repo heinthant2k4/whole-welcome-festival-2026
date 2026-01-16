@@ -7,6 +7,8 @@ import {
   Pause,
   FileSpreadsheet,
   ChevronDown,
+  Trash2,
+  AlertTriangle,
 } from "lucide-react";
 import { toast, Toaster } from "sonner";
 
@@ -73,6 +75,7 @@ export default function AdminClient() {
   const [loading, setLoading] = React.useState(true);
   const [search, setSearch] = React.useState("");
   const [busy, setBusy] = React.useState(false);
+  const [confirmText, setConfirmText] = React.useState("");
 
   /* ---------- FETCHERS ---------- */
 
@@ -109,6 +112,38 @@ export default function AdminClient() {
     }
   };
 
+  /* ---------- RESET VOTES ---------- */
+
+  const resetAllVotes = async () => {
+    if (confirmText !== "RESET") {
+      toast.error("Please type RESET to confirm");
+      return;
+    }
+
+    setBusy(true);
+    try {
+      const res = await fetch("/api/admin/reset", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (res.ok) {
+        const result = await res.json();
+        toast.success(`✅ Reset complete! ${result.deletedCount} votes deleted`);
+        setConfirmText("");
+        await fetchSummary(); // Refresh data
+      } else {
+        const error = await res.json();
+        toast.error(error.error || "Reset failed");
+      }
+    } catch (error) {
+      toast.error("Reset failed");
+      console.error(error);
+    } finally {
+      setBusy(false);
+    }
+  };
+
   /* ---------- EFFECT ---------- */
 
   React.useEffect(() => {
@@ -125,7 +160,7 @@ export default function AdminClient() {
     return <div className="p-10 text-sm text-slate-500">Loading admin…</div>;
   }
 
-  const crews = data.crews.filter(c =>
+  const crews = data.crews.filter((c) =>
     c.name.toLowerCase().includes(search.toLowerCase())
   );
 
@@ -141,26 +176,91 @@ export default function AdminClient() {
           <div className="flex items-center gap-2">
             <FileSpreadsheet size={18} />
             <strong>Festival_Voting_Summary.xlsx</strong>
-            <Badge variant="secondary">Read-only</Badge>
+            <Badge variant="secondary">Admin</Badge>
           </div>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button size="sm">
-                <Download size={14} />
-                Export
-                <ChevronDown size={14} />
+          <div className="flex gap-2">
+            {/* RESET BUTTON */}
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+               <Button
+                size="sm"
+                variant="destructive"
+                disabled={false}  // Force enable
+                style={{ backgroundColor: 'red', color: 'white' }}  // Force red
+              >
+                <Trash2 size={14} className="mr-1" />
+                RESET Voting Data
               </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem asChild>
-                <a href="/api/admin/export?format=csv">CSV</a>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <a href="/api/admin/export?format=json">JSON</a>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+              </AlertDialogTrigger>
+              <AlertDialogContent className="bg-white text-black">
+                <AlertDialogHeader>
+                  <div className="flex items-center gap-2 mb-2">
+                    <AlertTriangle className="text-red-600" size={24} />
+                    <AlertDialogTitle className="text-red-600">
+                      ⚠️ DANGER: Reset All Votes
+                    </AlertDialogTitle>
+                  </div>
+                  <AlertDialogDescription>
+                    <div className="space-y-3 text-black">
+                      <p className="font-semibold">This will PERMANENTLY delete:</p>
+                      <ul className="list-disc list-inside space-y-1 text-sm">
+                        <li>All {data.totalVotes} votes</li>
+                        <li>All voting history</li>
+                        <li>All fingerprint records</li>
+                      </ul>
+                      <p className="text-red-600 font-bold">
+                        ⚠️ THIS CANNOT BE UNDONE!
+                      </p>
+                      <p className="text-sm text-gray-600 mt-4">
+                        Type <strong>RESET</strong> below to confirm:
+                      </p>
+                      <Input
+                        placeholder="Type RESET"
+                        value={confirmText}
+                        onChange={(e) => setConfirmText(e.target.value.toUpperCase())}
+                        className="border-red-300 focus:border-red-500"
+                      />
+                    </div>
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel
+                    className="text-black"
+                    onClick={() => setConfirmText("")}
+                  >
+                    Cancel
+                  </AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={resetAllVotes}
+                    disabled={confirmText !== "RESET" || busy}
+                    className="bg-red-700 text-white hover:bg-red-800 disabled:opacity-50"
+                  >
+                    {busy ? "Resetting..." : "Confirm Reset"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+
+            {/* EXPORT BUTTON */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button size="sm">
+                  <Download size={14} />
+                  Export
+                  <ChevronDown size={14} />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem asChild>
+                  <a href="/api/admin/export?format=csv">CSV</a>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <a href="/api/admin/export?format=json">JSON</a>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
 
         {/* CONTROLS */}
@@ -172,9 +272,9 @@ export default function AdminClient() {
                 size="sm"
                 onClick={() => updateVotingState({ paused: false })}
                 disabled={busy}
-                className="h-7 text-[11px] font-semibold bg-emerald-600 text-black hover:bg-emerald-700 shadow-sm disabled:opacity-60"
+                className="h-7 text-[11px] font-semibold bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm disabled:opacity-60"
               >
-                <Play size={12} className="mr-1 text-black" /> Resume
+                <Play size={12} className="mr-1" /> Resume
               </Button>
             ) : (
               <AlertDialog>
@@ -183,9 +283,9 @@ export default function AdminClient() {
                     size="sm"
                     variant="destructive"
                     disabled={busy}
-                    className="h-7 text-[11px] font-semibold text-black shadow-sm disabled:opacity-60"
+                    className="h-7 text-[11px] font-semibold shadow-sm disabled:opacity-60"
                   >
-                    <Pause size={12} className="mr-1 text-black" /> Pause
+                    <Pause size={12} className="mr-1" /> Pause
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent className="bg-white text-black">
@@ -196,10 +296,12 @@ export default function AdminClient() {
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel className="text-black">Cancel</AlertDialogCancel>
+                    <AlertDialogCancel className="text-black">
+                      Cancel
+                    </AlertDialogCancel>
                     <AlertDialogAction
                       onClick={() => updateVotingState({ paused: true })}
-                      className="bg-red-700 text-black hover:bg-red-800"
+                      className="bg-red-700 text-white hover:bg-red-800"
                     >
                       Confirm
                     </AlertDialogAction>
@@ -211,9 +313,7 @@ export default function AdminClient() {
 
           <div className="flex items-center gap-2">
             <span>Schedule:</span>
-            <Badge>
-              {state.overrideSchedule ? "Override" : "Scheduled"}
-            </Badge>
+            <Badge>{state.overrideSchedule ? "Override" : "Scheduled"}</Badge>
             <Button
               size="sm"
               variant="link"
@@ -244,7 +344,7 @@ export default function AdminClient() {
             <Input
               placeholder="Filter crews…"
               value={search}
-              onChange={e => setSearch(e.target.value)}
+              onChange={(e) => setSearch(e.target.value)}
             />
             <span className="text-xs text-slate-500">
               Showing {crews.length}
@@ -254,7 +354,7 @@ export default function AdminClient() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>ID</TableHead>
+                <TableHead>Rank</TableHead>
                 <TableHead>Crew</TableHead>
                 <TableHead className="text-right">Votes</TableHead>
                 <TableHead>%</TableHead>
@@ -263,10 +363,21 @@ export default function AdminClient() {
             <TableBody>
               {crews.map((c, i) => (
                 <TableRow key={c.id}>
-                  <TableCell>{i + 1}</TableCell>
-                  <TableCell>{c.name}</TableCell>
-                  <TableCell className="text-right">{c.votes}</TableCell>
-                  <TableCell>{c.percentage.toFixed(2)}%</TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-sm">{i + 1}</span>
+                      {i === 0 && c.votes > 0 && (
+                        <span className="text-yellow-500">🏆</span>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell className="font-medium">{c.name}</TableCell>
+                  <TableCell className="text-right font-mono">
+                    {c.votes}
+                  </TableCell>
+                  <TableCell className="font-mono">
+                    {c.percentage.toFixed(2)}%
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
