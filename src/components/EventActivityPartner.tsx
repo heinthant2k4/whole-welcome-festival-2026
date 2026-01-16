@@ -19,20 +19,20 @@ interface Partner {
 export default function EventActivityPartner() {
   const partners: Partner[] = [
     {
-      id: "uyab",
-      name: "United Youth Association of Burma",
-      title: "UYA",
+      id: "bool_solutions",
+      name: "Boolean Digital Solutions",
+      title: "Boolean DS",
       description:
-        "One of the youth-led charitable organizations, which was born to support Orphans, Retirement home, Animal Shelter, Disabled, Grass roots, Rural Areas , Youth Empowerment and to share Philanthropic Attitudes to youth & public.",
-      image: "/EventActivityPartner/EventActivityPartner2.JPG",
-      category: "Youth Organization",
-      icon: <Heart className="w-6 h-6" />,
-      color: "from-yellow-500 to-orange-500",
+        "Founded by three students, Boolean Digital Solutions builds fast, affordable, and impactful digital tools. We help small businesses and communities solve everyday problems through simple, reliable web solutions.",
+      image: "/EventActivityPartner/EventActivityPartner5.png",
+      category: "Digital Services",
+      icon: <Cpu className="w-6 h-6" />,
+      color: "from-navy-600 to-blue-600",
       activities: [
-        "Community Building Activities",
-        "Youth Leadership Workshops",
-        "Networking Sessions",
-        "Social Impact Initiatives",
+        "Web Solutions",
+        "Event Technology",
+        "Digital Posters & Pages",
+        "Custom Business Tools",
       ],
     },
     {
@@ -82,22 +82,22 @@ export default function EventActivityPartner() {
       activities: ["To be announced on the festival day"],
     },
     {
-      id: "bool_solutions",
-      name: "Boolean Digital Solutions",
-      title: "Boolean DS",
+      id: "uyab",
+      name: "United Youth Association of Burma",
+      title: "UYA",
       description:
-        "Founded by three students, Boolean Digital Solutions builds fast, affordable, and impactful digital tools. We help small businesses and communities solve everyday problems through simple, reliable web solutions.",
-      image: "/EventActivityPartner/EventActivityPartner5.png",
-      category: "Digital Services",
-      icon: <Cpu className="w-6 h-6" />,
-      color: "from-navy-600 to-blue-600",
+        "One of the youth-led charitable organizations, which was born to support Orphans, Retirement home, Animal Shelter, Disabled, Grass roots, Rural Areas , Youth Empowerment and to share Philanthropic Attitudes to youth & public.",
+      image: "/EventActivityPartner/EventActivityPartner2.JPG",
+      category: "Youth Organization",
+      icon: <Heart className="w-6 h-6" />,
+      color: "from-yellow-500 to-orange-500",
       activities: [
-        "Web Solutions",
-        "Event Technology",
-        "Digital Posters & Pages",
-        "Custom Business Tools",
+        "Community Building Activities",
+        "Youth Leadership Workshops",
+        "Networking Sessions",
+        "Social Impact Initiatives",
       ],
-    }
+    },
 
   ];
 
