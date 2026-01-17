@@ -42,12 +42,12 @@ export default function Page() {
   return (
     <main className="min-h-dvh">
       <Navbar />
-      <DanceCrewSection />
+      <Hero config={siteConfig} />
       <QuickInfoCards config={siteConfig} />
       <About config={siteConfig} />
       <FeaturedActivity />
       <ArtistSection />
-      <Hero config={siteConfig} />
+      <DanceCrewSection />
       <EventActivityPartner />
       <Sponsorship />
       <Footer config={siteConfig} />
